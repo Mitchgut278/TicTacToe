@@ -1,3 +1,4 @@
+from cgitb import grey
 import pygame, sys
 from pygame import Vector2
 
@@ -21,17 +22,24 @@ class Block:
         self.pos = pos
         self.x = pos_map[pos][0]
         self.y = pos_map[pos][1]
+        if (self.x + self.y) % 2 == 0:
+            color = 'grey'
+        else:
+            color = 'black'
         self.pos = pygame.Vector2(self.x, self.y)
         self.block_rect = pygame.Rect(self.pos.x * cell_size, self.pos.y * cell_size, cell_size, cell_size)
-        pygame.draw.rect(screen, 'grey', self.block_rect)
+        pygame.draw.rect(screen, color, self.block_rect)
         self.draw_x()
     
     def draw_x(self):
         center = self.block_rect.center
         x_font = pygame.font.Font(None, 25)
         x_surf = x_font.render('X', True, 'white')
-        x_rect = x_surf.get_rect(center = center)
-        pygame.draw.rect(screen, 'white', x_rect)
+        # TODO: center x rect
+        x_rect = pygame.Rect(self.x * cell_size + cell_size * 1/3, self.y * cell_size + cell_size * 1/3, cell_size, cell_size)
+        print(x_rect.center)
+        print(x_rect.center)
+        screen.blit(x_surf, x_rect)
 
 class X:
     def __init__(self, pos):
@@ -44,6 +52,9 @@ while True:
         if event.type == pygame.QUIT:
             pygame.quit()
             sys.exit()
+        
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            print('yer')
     pygame.display.update()
     screen.fill('beige')
     
