@@ -36,7 +36,7 @@ class Block:
         self.y = pos_map[pos][1]
         self.has_x = False
         self.has_o = False
-        
+        self.letter = ''
         self.pos = pygame.Vector2(self.x, self.y)
         self.block_rect = pygame.Rect(self.pos.x * cell_size, self.pos.y * cell_size, cell_size, cell_size)
 
@@ -47,13 +47,13 @@ class Block:
             color = 'black'
         pygame.draw.rect(screen, color, self.block_rect)
 
-        if self.has_x:
+        if self.letter:
             self.draw_x()
 
     def draw_x(self):
         # center = self.block_rect.center
         x_font = pygame.font.Font(None, 25)
-        x_surf = x_font.render('X', True, 'white')
+        x_surf = x_font.render(self.letter, True, 'white')
         # TODO: center x rect
         x_rect = pygame.Rect(self.x * cell_size + cell_size * 1/3, self.y * cell_size + cell_size * 1/3, cell_size, cell_size)
         screen.blit(x_surf, x_rect)
@@ -69,6 +69,7 @@ for key in pos_map.keys():
     block_map[key] = block
 
 board = Board()
+current_round = 0
 
 while True:
     for event in pygame.event.get():
@@ -80,14 +81,13 @@ while True:
             pos = pygame.mouse.get_pos()
             for key in block_map.keys():
                 block = block_map[key]
-                if block.block_rect.collidepoint(pos):
-                    block.draw_x()
+                if block.block_rect.collidepoint(pos) and not block.letter:
+                    if current_round % 2 == 0: block.letter = 'X'
+                    else: block.letter = 'O'
+                    current_round += 1
             
     board.draw_board()
     pygame.display.update()
     screen.fill('beige')
-    
-
-    # screen.blit(test_surf, (50,100))
 
     clock.tick(60)
