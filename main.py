@@ -24,10 +24,31 @@ block_map = {'top_left': None, 'top_middle': None, 'top_right': None,
 class Board:
     def __init__(self):
         self.blocks = block_map.values()
-    
+        self.winner = None
+
     def draw_board(self):
         for block in self.blocks:
             block.draw_block()
+        if(self.check_win()):
+            pygame.quit()
+            sys.exit()
+
+    def check_win(self):
+        board = [0,0,0,0,0,0,0,0,0]
+        for i, block in enumerate(self.blocks):
+            board[i] = block.letter
+        
+        winning_combinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],  # Horizontal lines
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],  # Vertical lines
+            [0, 4, 8], [2, 4, 6]              # Diagonals
+        ]
+
+        for combo in winning_combinations:
+            if board[combo[0]] == board[combo[1]] == board[combo[2]] and board[combo[0]] != 0:
+                print(board[combo[0]])
+                return board[combo[0]]  # Return the winning player's value (X or O, for example)
+        return None
 
 class Block:
     def __init__(self, pos):
@@ -36,7 +57,7 @@ class Block:
         self.y = pos_map[pos][1]
         self.has_x = False
         self.has_o = False
-        self.letter = ''
+        self.letter = 0
         self.pos = pygame.Vector2(self.x, self.y)
         self.block_rect = pygame.Rect(self.pos.x * cell_size, self.pos.y * cell_size, cell_size, cell_size)
 
