@@ -1,9 +1,7 @@
-from cgitb import grey
 import pygame, sys
-from pygame import Vector2
 
 pygame.init()
-
+game_active = True
 cell_size = 150
 cell_number = 3
 
@@ -29,9 +27,6 @@ class Board:
     def draw_board(self):
         for block in self.blocks:
             block.draw_block()
-        if(self.check_win()):
-            pygame.quit()
-            sys.exit()
 
     def check_win(self):
         board = [0,0,0,0,0,0,0,0,0]
@@ -46,9 +41,16 @@ class Board:
 
         for combo in winning_combinations:
             if board[combo[0]] == board[combo[1]] == board[combo[2]] and board[combo[0]] != 0:
-                print(board[combo[0]])
                 return board[combo[0]]  # Return the winning player's value (X or O, for example)
+        
+        if 0 not in board:
+            return 'Draw!'
+        
         return None
+
+    def clear_board(self):
+        for block in self.blocks:
+            block.letter = 0
 
 class Block:
     def __init__(self, pos):
@@ -69,21 +71,15 @@ class Block:
         pygame.draw.rect(screen, color, self.block_rect)
 
         if self.letter:
-            self.draw_x()
+            self.draw_letter()
 
-    def draw_x(self):
-        # center = self.block_rect.center
-        x_font = pygame.font.Font(None, 25)
-        x_surf = x_font.render(self.letter, True, 'white')
-        # TODO: center x rect
-        x_rect = pygame.Rect(self.x * cell_size + cell_size * 1/3, self.y * cell_size + cell_size * 1/3, cell_size, cell_size)
-        screen.blit(x_surf, x_rect)
+    def draw_letter(self):
+        center = self.block_rect.center
+        letter_font = pygame.font.Font(None, 25)
+        letter_surf = letter_font.render(self.letter, True, 'white')
+        letter_rect = letter_surf.get_rect(center=center)
+        screen.blit(letter_surf, letter_rect)
         self.has_x = True
-
-class X:
-    def __init__(self, pos):
-        self.x = None
-        self.y = None
 
 for key in pos_map.keys():
     block = Block(key)
@@ -98,7 +94,7 @@ while True:
             pygame.quit()
             sys.exit()
         
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+        if game_active and event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
             pos = pygame.mouse.get_pos()
             for key in block_map.keys():
                 block = block_map[key]
@@ -106,9 +102,37 @@ while True:
                     if current_round % 2 == 0: block.letter = 'X'
                     else: block.letter = 'O'
                     current_round += 1
-            
-    board.draw_board()
-    pygame.display.update()
-    screen.fill('beige')
+                    result = board.check_win()
+                    
+                    if result:
+                        game_active = False 
+
+        if game_active:
+            board.draw_board()
+            pygame.display.update()
+
+    
+        else:
+            screen.fill('beige')
+            end_screen_font = pygame.font.Font(None, 25)
+            if result != 'draw':
+                result_message = end_screen_font.render(f'{result} Wins!', False, (111,196,169))
+            else:
+                result_message = end_screen_font.render(result, False, (111,196,169))
+            result_message_rect = result_message.get_rect(center=(225, 175))
+
+            end_game_message = end_screen_font.render('Press any button to Play Again!', False, (111,196,169))
+            end_game_message_rect = end_game_message.get_rect(center=(225, 250))    
+
+            screen.blit(result_message, result_message_rect)
+            screen.blit(end_game_message, end_game_message_rect)
+            pygame.display.update()
+
+            # restart game on button click
+            if event.type == pygame.KEYDOWN:
+                game_active = True
+                board.clear_board()
+                current_round = 0
+    
 
     clock.tick(60)
